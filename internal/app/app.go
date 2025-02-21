@@ -8,11 +8,11 @@ import (
 	"syscall"
 
 	"github.com/ne-ray/tcp-inbox/config"
-	// "github.com/ne-ray/tcp-inbox/internal/usecase"
+	"github.com/ne-ray/tcp-inbox/internal/usecase"
 	// "github.com/evrone/go-clean-template/internal/usecase/repo"
 	// "github.com/evrone/go-clean-template/internal/usecase/webapi"
-	// "github.com/evrone/go-clean-template/pkg/httpserver"
 	"github.com/ne-ray/tcp-inbox/pkg/logger"
+	"github.com/ne-ray/tcp-inbox/pkg/tcpserver"
 )
 
 const (
@@ -32,10 +32,12 @@ func Run(cfg *config.Config) {
 	// 	webapi.New(),
 	// )
 
+	// FIXME: test
+	h := usecase.Handler{}
+
 	// TCP Server
-	// handler := gin.New()
-	// v1.NewRouter(handler, l, translationUseCase)
-	// httpServer := httpserver.New(handler, httpserver.Port(cfg.HTTP.Port))
+	tcpserver := tcpserver.New(&h, tcpserver.Host(cfg.Host), tcpserver.Port(cfg.Port))
+	l.Debug("Start listen host: " + cfg.Host + " port: " + cfg.Port)
 
 	// Waiting signal
 	interrupt := make(chan os.Signal, 1)
@@ -47,17 +49,19 @@ func Run(cfg *config.Config) {
 	select {
 	case s := <-interrupt:
 		l.Info("app - Run - signal: " + s.String())
-		// case err = <-httpServer.Notify():
-		// 	l.Error(fmt.Errorf("app - Run - httpServer.Notify: %w", err))
+	case err = <-tcpserver.Notify():
+		l.With("error", err).Error("app - Run tcpServer.Notify error")
 	}
 
 	// Shutdown
-	// err = httpServer.Shutdown()
-	// if err != nil {
-	// 	l.Error(fmt.Errorf("app - Run - httpServer.Shutdown: %w", err))
-	// }
+	err = tcpserver.Shutdown()
+	if err != nil {
+		l.With("error", err).Error("app - Run - tcpServer.Shutdown error")
+	}
 
 	if err = l.Shutdown(); err != nil {
 		log.Fatalf("Logger shutdown error: %s", err)
 	}
+
+	l.Info("Application stoped")
 }
