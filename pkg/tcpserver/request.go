@@ -2,7 +2,6 @@ package tcpserver
 
 import (
 	"context"
-	"io"
 )
 
 var methods = map[string]bool{"HANDSHAKE": true, "DATA": true}
@@ -15,14 +14,15 @@ type Request struct {
 	// Method specifies (HANDSHAKE, DATA).
 	Method string
 
-	// Phase specifies for HANDSHAKE - (TYPE,1,2,3,4,...), DATA - (CHAPTER,LINE,TEXT).
+	// Phase specifies for HANDSHAKE - (HELLO,TYPE,1,2,3,4,...), DATA - (CHAPTER,LINE,TEXT).
 	Phase string
 
-	RAW string
+	RAW []byte
 
-	Body io.ReadCloser
+	Body string
+	// Body io.ReadCloser
 
-	GetBody func() (io.ReadCloser, error)
+	// GetBody func() (io.ReadCloser, error)
 
 	RemoteAddr string
 
