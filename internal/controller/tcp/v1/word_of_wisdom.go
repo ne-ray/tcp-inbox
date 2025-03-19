@@ -138,7 +138,15 @@ func (h *WordOfWisdomHandler) m_handshake_phase_n(phase string, r *srv.Request) 
 
 	s := sc.Value()
 
-	if err := s.Validate(phase, rs.Data); err != nil {
+	if err := s.ParseData(phase, rs.Data); err != nil {
+		return Response{Error: &ResponseError{Code: 422, Description: err.Error()}}, nil
+	}
+
+	if err := s.Validate(phase); err != nil {
+		return Response{Error: &ResponseError{Code: 422, Description: err.Error()}}, nil
+	}
+
+	if err := s.RunPhase(phase); err != nil {
 		return Response{Error: &ResponseError{Code: 422, Description: err.Error()}}, nil
 	}
 

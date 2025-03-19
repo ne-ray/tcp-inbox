@@ -38,6 +38,33 @@ func (s *Session) Generate(algo string, ttl time.Duration) error {
 	return nil
 }
 
+func (s *Session) ParseData(phase string, response json.RawMessage) error {
+	if s.Public.Algo == fiatshamir.Name {
+		pr, pb, err := fiatshamir.ParseData(phase, s.Private.FiatShamir, s.Public.FiatShamir, response)
+		if err != nil {
+			return err
+		}
+
+		s.Private.FiatShamir, s.Public.FiatShamir = pr, pb
+	} else {
+		return errors.New("algo not support")
+	}
+
+	return nil
+}
+
+func (s *Session) Validate(phase string) error {
+	if s.Public.Algo == fiatshamir.Name {
+		if err := fiatshamir.Validate(phase, s.Private.FiatShamir, s.Public.FiatShamir); err != nil {
+			return err
+		}
+	} else {
+		return errors.New("algo not support")
+	}
+
+	return nil
+}
+
 func (s *Session) RunPhase(phase string) error {
 	if s.Public.Algo == fiatshamir.Name {
 		pv, pb, err := fiatshamir.RunPhase(phase, s.Private.FiatShamir, s.Public.FiatShamir)
@@ -46,18 +73,6 @@ func (s *Session) RunPhase(phase string) error {
 		}
 
 		s.Private.FiatShamir, s.Public.FiatShamir = pv, pb
-	} else {
-		return errors.New("algo not support")
-	}
-
-	return nil
-}
-
-func (s *Session) Validate(phase string, response json.RawMessage) error {
-	if s.Public.Algo == fiatshamir.Name {
-		if err := fiatshamir.Validate(phase, s.Private.FiatShamir, s.Public.FiatShamir, response); err != nil {
-			return err
-		}
 	} else {
 		return errors.New("algo not support")
 	}

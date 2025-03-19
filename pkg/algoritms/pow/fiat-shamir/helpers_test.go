@@ -8,7 +8,7 @@ import (
 
 func TestFiatShamirPublicKey(t *testing.T) {
 	n := uint64(553913)
-	r, ok := fiatshamir.FiatShamirPublicKey(n)
+	r, ok := fiatshamir.HelperGetCoprime(n)
 
 	if !ok {
 		t.Error("function return copain not found")
@@ -16,5 +16,5 @@ func TestFiatShamirPublicKey(t *testing.T) {
 
 	// FIXME: сформировать список взаимопростых для теста
 	_ = r
-	// if 
+	// if
 }

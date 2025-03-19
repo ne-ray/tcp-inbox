@@ -5,31 +5,10 @@ import (
 	"errors"
 	"math"
 	"math/rand"
+	"strings"
 
-	"github.com/fxtlabs/primes"
 	"github.com/ne-ray/tcp-inbox/pkg/algoritms"
 )
-
-const (
-	Name = "FiatShamirAlgo"
-
-	Phase1 = "1"
-	Phase2 = "2"
-)
-
-const randFrom = 1024
-const randTo = 1024 * 1024
-
-type Private struct {
-	LastPhase string
-	Q         int64
-	P         int64
-}
-
-type Public struct {
-	N         uint64 `json:"start_key"`
-	PublicKey uint64 `json:"public_key"`
-}
 
 func Generator(pv Private, pb Public) (Private, Public) {
 	var p, q int64
@@ -61,33 +40,41 @@ func Generator(pv Private, pb Public) (Private, Public) {
 	return pv, pb
 }
 
-func HelperGetCoprime(n uint64) (key uint64, exists bool) {
-	for _, v := range primes.Sieve(int(n) - 1) {
-		if primes.Coprime(int(n), v) {
-			key, exists = uint64(v), true
+func ParseData(p string, pv Private, pb Public, response json.RawMessage) (Private, Public, error) {
+	switch strings.ToUpper(p) {
+	case PhaseSetKey:
+		r := struct {
+			Key uint64 `json:"key"`
+		}{}
 
-			return
+		if err := json.Unmarshal(response, &r); err != nil {
+			return Private{}, Public{}, err
 		}
-	}
 
-	return
-}
+		pb.PublicKey = r.Key
 
-func RunPhase(p string, pv Private, pb Public) (Private, Public, error) {
-	switch p {
-	case Phase1:
+		return pv, pb, nil
 	}
 
 	return Private{}, Public{}, errors.New("phase not found")
 }
 
-func Validate(p string, pv Private, pb Public, r json.RawMessage) error {
-	switch p {
-	case Phase1:
+func Validate(p string, pv Private, pb Public) error {
+	switch strings.ToUpper(p) {
+	case PhaseSetKey:
+		return nil
 		// if !algoritms.Coprime(int64(s.Public.StartKey), int64(rs.Key)) {
 		// 	return Response{}, errors.New("key not coprime")
 		// }
 	}
 
 	return errors.New("phase not found")
+}
+
+func RunPhase(p string, pv Private, pb Public) (Private, Public, error) {
+	switch strings.ToUpper(p) {
+	case Phase1:
+	}
+
+	return Private{}, Public{}, errors.New("phase not found")
 }
