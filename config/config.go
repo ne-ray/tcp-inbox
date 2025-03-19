@@ -9,8 +9,9 @@ import (
 type (
 	// Config -.
 	Config struct {
-		Listen `yaml:"listen"`
-		Log    `yaml:"log"`
+		Listen  `yaml:"listen"`
+		Log     `yaml:"log"`
+		Storage `yaml:"storage"`
 	}
 
 	// HTTP -.
@@ -21,7 +22,13 @@ type (
 
 	// Log -.
 	Log struct {
-		Level string `env-required:"true" yaml:"level"   env:"LOG_LEVEL"`
+		Level string `env-required:"true" yaml:"level" env:"LOG_LEVEL"`
+	}
+
+	// Storage -.
+	Storage struct {
+		// Type string
+		Path string `yaml:"path" env:"STORAGE_PATH"`
 	}
 )
 

@@ -8,9 +8,9 @@ import (
 	"syscall"
 
 	"github.com/ne-ray/tcp-inbox/config"
-	"github.com/ne-ray/tcp-inbox/internal/usecase"
-	// "github.com/evrone/go-clean-template/internal/usecase/repo"
-	// "github.com/evrone/go-clean-template/internal/usecase/webapi"
+	"github.com/ne-ray/tcp-inbox/internal/usecase/word-of-wisdom"
+	"github.com/ne-ray/tcp-inbox/internal/repo/persistent"
+	v1 "github.com/ne-ray/tcp-inbox/internal/controller/tcp/v1"
 	"github.com/ne-ray/tcp-inbox/pkg/logger"
 	"github.com/ne-ray/tcp-inbox/pkg/tcpserver"
 )
@@ -27,16 +27,15 @@ func Run(cfg *config.Config) {
 	l.Debug("Running application...")
 
 	// Use case
-	// translationUseCase := usecase.New(
-	// 	repo.New(pg),
-	// 	webapi.New(),
-	// )
+	wordOfWisdomUseCase := wordofwisdom.New(
+		persistent.New(cfg.Storage),
+	)
 
-	// FIXME: test
-	h := usecase.Handler{}
+	// TCP Handler
+	h := v1.NewWordOfWisdomHandler(wordOfWisdomUseCase, l)
 
 	// TCP Server
-	tcpserver := tcpserver.New(&h, tcpserver.Host(cfg.Host), tcpserver.Port(cfg.Port))
+	tcpserver := tcpserver.New(h, tcpserver.Host(cfg.Host), tcpserver.Port(cfg.Port))
 	l.Debug("Start listen host: " + cfg.Host + " port: " + cfg.Port)
 
 	// Waiting signal
