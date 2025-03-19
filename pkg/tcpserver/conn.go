@@ -156,6 +156,9 @@ func parseInputRequest(data []byte) (*Request, error) {
 		return nil, errors.New("400")
 	}
 
+	r.Method = strings.TrimSpace(r.Method)
+	r.Phase = strings.TrimSpace(r.Phase)
+
 	r.Body = dn
 
 	return &r, nil

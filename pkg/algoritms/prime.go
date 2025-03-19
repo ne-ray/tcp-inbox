@@ -1,30 +1,22 @@
 package algoritms
 
 import (
+	"github.com/fxtlabs/primes"
 	"math"
 )
 
 func IsPrime(n int64) bool {
-	if n <= 1 {
-		return false
-	} else if n == 2 {
-		return true
-	} else if n%2 == 0 {
-		return false
-	}
-	sqrt := int64(math.Sqrt(float64(n)))
-	for i := int64(3); i <= sqrt; i += 2 {
-		if n%i == 0 {
-			return false
-		}
-	}
+	return primes.IsPrime(int(n))
+}
 
-	return true
+func Coprime(a, b int64) bool {
+	return primes.Coprime(int(a), int(b))
 }
 
 func NextPrimeNumber(n int64) (prime int64, exists bool) {
 	if n <= 1 {
 		prime, exists = 2, true
+
 		return
 	}
 

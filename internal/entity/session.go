@@ -1,52 +1,66 @@
 package entity
 
 import (
-	"math"
-	"math/rand"
+	"encoding/json"
+	"errors"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/ne-ray/tcp-inbox/pkg/algoritms"
+	"github.com/ne-ray/tcp-inbox/pkg/algoritms/pow/fiat-shamir"
 )
-
-const randFrom = 1024
-const randTo = 1024 * 1024
 
 type Session struct {
 	Private struct {
-		P int64
-		Q int64
+		PoWCompleted bool
+		FiatShamir   fiatshamir.Private
 	}
-	Public SessionPublic
+	Public struct {
+		ID         uuid.UUID `json:"id"`
+		Algo       string    `json:"algo"`
+		ExpiredAt  time.Time `json:"exp"`
+		FiatShamir fiatshamir.Public
+	}
 }
 
-type SessionPublic struct {
-	ID        uuid.UUID `json:"id"`
-	Key       uint64    `json:"key"`
-	ExpiredAt time.Time `json:"exp"`
-}
-
-func (s *Session) Generate() {
+func (s *Session) Generate(algo string, ttl time.Duration) error {
 	s.Public.ID = uuid.New()
-	s.pow_fiat_shamir_generator()
+
+	if strings.EqualFold(algo, fiatshamir.Name) {
+		s.Public.Algo = fiatshamir.Name
+		s.Private.FiatShamir, s.Public.FiatShamir = fiatshamir.Generator(s.Private.FiatShamir, s.Public.FiatShamir)
+	} else {
+		return errors.New("algo not support")
+	}
+
+	s.Public.ExpiredAt = time.Now().UTC().Add(ttl)
+
+	return nil
 }
 
-func (s *Session) pow_fiat_shamir_generator() {
-	var p, q int64
+func (s *Session) RunPhase(phase string) error {
+	if s.Public.Algo == fiatshamir.Name {
+		pv, pb, err := fiatshamir.RunPhase(phase, s.Private.FiatShamir, s.Public.FiatShamir)
+		if err != nil {
+			return err
+		}
 
-	var e bool
-	for e {
-		p = rand.Int63n(randTo) + randFrom
-		p, e = algoritms.NextPrimeNumber(p)
+		s.Private.FiatShamir, s.Public.FiatShamir = pv, pb
+	} else {
+		return errors.New("algo not support")
 	}
 
-	e = false
-	for e {
-		q = rand.Int63n(randTo) + randFrom
-		q, e = algoritms.NextPrimeNumber(q)
+	return nil
+}
+
+func (s *Session) Validate(phase string, response json.RawMessage) error {
+	if s.Public.Algo == fiatshamir.Name {
+		if err := fiatshamir.Validate(phase, s.Private.FiatShamir, s.Public.FiatShamir, response); err != nil {
+			return err
+		}
+	} else {
+		return errors.New("algo not support")
 	}
 
-	s.Private.P = p
-	s.Private.Q = q
-	s.Public.Key = uint64(math.Abs(float64(p * q)))
+	return nil
 }
