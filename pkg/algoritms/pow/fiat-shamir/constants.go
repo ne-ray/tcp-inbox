@@ -1,12 +1,12 @@
 package fiatshamir
 
-
 const (
 	Name = "FiatShamirAlgo"
 
 	PhaseSetKey = "SET-KEY"
-	Phase1      = "1"
-	Phase2      = "2"
+	PhaseProof  = "PROOF"
+	PhaseCall   = "CALL"
+	PhaseAnswer = "ANSWER"
 )
 
 const randFrom = 1024

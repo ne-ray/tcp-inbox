@@ -73,7 +73,8 @@ func Validate(p string, pv Private, pb Public) error {
 
 func RunPhase(p string, pv Private, pb Public) (Private, Public, error) {
 	switch strings.ToUpper(p) {
-	case Phase1:
+	case PhaseSetKey:
+		return pv, pb, nil
 	}
 
 	return Private{}, Public{}, errors.New("phase not found")
