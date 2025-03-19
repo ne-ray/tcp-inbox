@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
@@ -12,6 +13,7 @@ type (
 		Listen  `yaml:"listen"`
 		Log     `yaml:"log"`
 		Storage `yaml:"storage"`
+		Session `yaml:"session"`
 	}
 
 	// HTTP -.
@@ -29,6 +31,11 @@ type (
 	Storage struct {
 		// Type string
 		Path string `yaml:"path" env:"STORAGE_PATH"`
+	}
+
+	// Session -.
+	Session struct {
+		TTL time.Duration `env-required:"true" yaml:"ttl" env:"SESSION_TTL"`
 	}
 )
 

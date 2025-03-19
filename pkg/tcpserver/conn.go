@@ -66,16 +66,14 @@ func (c *conn) serve(ctx context.Context) {
 	for scanner.Scan() {
 		r, err := parseInputRequest(scanner.Bytes())
 		if err != nil {
-			fmt.Printf("Invalid input: %s", err)
-
-			_, _ = c.rwc.Write([]byte("NTI/1.0 ERR/" + err.Error() + "\n"))
+			_, _ = c.rwc.Write([]byte("NTI/1.0 STATUS:" + err.Error() + "\n\n"))
 			continue
 		}
 
 		r.RemoteAddr = ra
 
 		if err := validateInputRequest(r); err != nil {
-			_, _ = c.rwc.Write([]byte("NTI/1.0 ERR/422\n"))
+			_, _ = c.rwc.Write([]byte("NTI/1.0 STATUS:422\n\n"))
 			continue
 		}
 
@@ -85,6 +83,7 @@ func (c *conn) serve(ctx context.Context) {
 	}
 
 	if err := scanner.Err(); err != nil {
+		//FIXME: переделать на логгер или что то другое
 		fmt.Printf("Invalid input: %s", err)
 	}
 }

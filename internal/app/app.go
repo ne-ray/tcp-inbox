@@ -32,7 +32,7 @@ func Run(cfg *config.Config) {
 	)
 
 	// TCP Handler
-	h := v1.NewWordOfWisdomHandler(wordOfWisdomUseCase, l)
+	h := v1.NewWordOfWisdomHandler(wordOfWisdomUseCase, l, cfg.Session)
 
 	// TCP Server
 	tcpserver := tcpserver.New(h, tcpserver.Host(cfg.Host), tcpserver.Port(cfg.Port))

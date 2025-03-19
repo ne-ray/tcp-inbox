@@ -3,3 +3,7 @@ listen:
   port: 19777
 log:
   level: debug
+storage:
+  path: "./data"
+session:
+  ttl: 1m

@@ -4,7 +4,19 @@ import (
 	"context"
 )
 
-var methods = map[string]bool{"HANDSHAKE": true, "DATA": true}
+const (
+	METHOD_HANDSHAKE = "HANDSHAKE"
+	METHOD_DATA      = "DATA"
+)
+
+const (
+	HANDSHAKE_PHASE_HELLO = "HELLO"
+	HANDSHAKE_PHASE_TYPE  = "TYPE"
+	HANDSHAKE_PHASE_1     = "1"
+	HANDSHAKE_PHASE_2     = "2"
+)
+
+var methods = map[string]bool{METHOD_HANDSHAKE: true, METHOD_DATA: true}
 
 type Request struct {
 	Proto      string // "NTI/1.0"
