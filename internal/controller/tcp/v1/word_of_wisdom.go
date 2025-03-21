@@ -10,7 +10,8 @@ import (
 	"github.com/ne-ray/tcp-inbox/config"
 	"github.com/ne-ray/tcp-inbox/internal/entity"
 	"github.com/ne-ray/tcp-inbox/internal/usecase"
-	"github.com/ne-ray/tcp-inbox/pkg/algoritms/pow/fiat-shamir"
+	// "github.com/ne-ray/tcp-inbox/pkg/algoritms/pow/fiat-shamir"
+	"github.com/ne-ray/tcp-inbox/pkg/algoritms/pow/hashcash"
 	"github.com/ne-ray/tcp-inbox/pkg/logger"
 	srv "github.com/ne-ray/tcp-inbox/pkg/tcpserver"
 )
@@ -102,7 +103,7 @@ func (h *WordOfWisdomHandler) m_handshake_hello(_ *srv.Request) (Response, error
 		Types []string `json:"support_types"`
 	}
 
-	r := supportType{Types: []string{fiatshamir.Name}}
+	r := supportType{Types: []string{hashcash.Name}}
 
 	return Response{Data: r}, nil
 }
@@ -156,6 +157,7 @@ func (h *WordOfWisdomHandler) m_handshake_phase_n(phase string, r *srv.Request) 
 func (h *WordOfWisdomHandler) m_data(r *srv.Request) (Response, error) {
 	type request struct {
 		SessionID string          `json:"session_id"`
+		POWData   json.RawMessage `json:"pow_data"`
 		Data      json.RawMessage `json:"data"`
 	}
 
@@ -169,9 +171,22 @@ func (h *WordOfWisdomHandler) m_data(r *srv.Request) (Response, error) {
 		return Response{Error: &ResponseError{Code: 401, Description: "session not found"}}, nil
 	}
 
+	s := sc.Value()
+
+	// Test POW is completed
+	if c, err := s.POWCheck(rs.POWData); err != nil {
+		return Response{}, err
+	} else if !c {
+		return Response{Error: &ResponseError{Code: 403, Description: "pow missmatch"}}, nil
+	}
+
+	// Update session with old value
+	s.Private.PoWCompleted = true
+	s.Private.CountReqests++
+	h.s.Set(rs.SessionID, s, s.Public.ExpiredAt.UTC().Sub(time.Now().UTC()))
+
 	// FIXME: переделать на использование usecase
 	fmt.Println(r.RAW)
 	resp := Response{Data: "test\n"}
-
 	return resp, nil
 }

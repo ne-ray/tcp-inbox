@@ -6,4 +6,4 @@ log:
 storage:
   path: "./data"
 session:
-  ttl: 1m
+  ttl: 2m

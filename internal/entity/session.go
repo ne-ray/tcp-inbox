@@ -7,75 +7,101 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/ne-ray/tcp-inbox/pkg/algoritms/pow"
 	"github.com/ne-ray/tcp-inbox/pkg/algoritms/pow/fiat-shamir"
+	"github.com/ne-ray/tcp-inbox/pkg/algoritms/pow/hashcash"
 )
+
+var ErrAlgoNotSupport = errors.New("algo not support")
 
 type Session struct {
 	Private struct {
 		PoWCompleted bool
-		FiatShamir   fiatshamir.Private
+		CountReqests int
+		AlgoData     json.RawMessage
 	}
 	Public struct {
-		ID         uuid.UUID `json:"id"`
-		Algo       string    `json:"algo"`
-		ExpiredAt  time.Time `json:"exp"`
-		FiatShamir fiatshamir.Public
+		ID        uuid.UUID `json:"id"`
+		Algo      string    `json:"algo"`
+		ExpiredAt time.Time `json:"exp"`
+		AlgoData  json.RawMessage
 	}
 }
 
 func (s *Session) Generate(algo string, ttl time.Duration) error {
 	s.Public.ID = uuid.New()
 
-	if strings.EqualFold(algo, fiatshamir.Name) {
+	var a pow.POW
+
+	switch strings.ToLower(algo) {
+	case strings.ToLower(fiatshamir.Name):
 		s.Public.Algo = fiatshamir.Name
-		s.Private.FiatShamir, s.Public.FiatShamir = fiatshamir.Generator(s.Private.FiatShamir, s.Public.FiatShamir)
-	} else {
-		return errors.New("algo not support")
+		a = &fiatshamir.Server{}
+	case strings.ToLower(hashcash.Name):
+		s.Public.Algo = hashcash.Name
+		a = &hashcash.Server{}
+	default:
+		return ErrAlgoNotSupport
 	}
 
+	var err error
+	s.Private.AlgoData, s.Public.AlgoData, err = a.Generator(s.Private.AlgoData, s.Public.AlgoData)
 	s.Public.ExpiredAt = time.Now().UTC().Add(ttl)
 
-	return nil
+	return err
 }
 
-func (s *Session) ParseData(phase string, response json.RawMessage) error {
-	if s.Public.Algo == fiatshamir.Name {
-		pr, pb, err := fiatshamir.ParseData(phase, s.Private.FiatShamir, s.Public.FiatShamir, response)
-		if err != nil {
-			return err
-		}
-
-		s.Private.FiatShamir, s.Public.FiatShamir = pr, pb
-	} else {
-		return errors.New("algo not support")
+func (s *Session) ParseData(phase string, request json.RawMessage) error {
+	a, err := s.getPOW()
+	if err != nil {
+		return err
 	}
 
-	return nil
+	s.Private.AlgoData, s.Public.AlgoData, err = a.ParsePhaseData(phase, s.Private.AlgoData, s.Public.AlgoData, request)
+
+	return err
 }
 
 func (s *Session) Validate(phase string) error {
-	if s.Public.Algo == fiatshamir.Name {
-		if err := fiatshamir.Validate(phase, s.Private.FiatShamir, s.Public.FiatShamir); err != nil {
-			return err
-		}
-	} else {
-		return errors.New("algo not support")
+	a, err := s.getPOW()
+	if err != nil {
+		return err
 	}
 
-	return nil
+	return a.Validate(phase, s.Private.AlgoData, s.Public.AlgoData)
 }
 
 func (s *Session) RunPhase(phase string) error {
-	if s.Public.Algo == fiatshamir.Name {
-		pv, pb, err := fiatshamir.RunPhase(phase, s.Private.FiatShamir, s.Public.FiatShamir)
-		if err != nil {
-			return err
-		}
-
-		s.Private.FiatShamir, s.Public.FiatShamir = pv, pb
-	} else {
-		return errors.New("algo not support")
+	a, err := s.getPOW()
+	if err != nil {
+		return err
 	}
 
-	return nil
+	s.Private.AlgoData, s.Public.AlgoData, err = a.RunPhase(phase, s.Private.AlgoData, s.Public.AlgoData)
+
+	return err
+}
+
+func (s *Session) POWCheck(request json.RawMessage) (bool, error) {
+	a, err := s.getPOW()
+	if err != nil {
+		return false, err
+	}
+
+	return a.POWCheck(s.Private.AlgoData, s.Public.AlgoData, request)
+}
+
+func (s *Session) getPOW() (pow.POW, error) {
+	var a pow.POW
+
+	switch s.Public.Algo {
+	case fiatshamir.Name:
+		a = &fiatshamir.Server{}
+	case hashcash.Name:
+		a = &hashcash.Server{}
+	default:
+		return nil, ErrAlgoNotSupport
+	}
+
+	return a, nil
 }

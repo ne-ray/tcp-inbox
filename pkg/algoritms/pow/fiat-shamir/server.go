@@ -10,7 +10,16 @@ import (
 	"github.com/ne-ray/tcp-inbox/pkg/algoritms"
 )
 
-func Generator(pv Private, pb Public) (Private, Public) {
+type Server struct{}
+
+var ErrPhaseNotHave = errors.New("phase not found")
+
+func (s *Server) Generator(pvi, pbi json.RawMessage) (json.RawMessage, json.RawMessage, error) {
+	pv, pb, err := unmarshalData(pvi, pbi)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	var p, q int64
 
 	var e bool
@@ -25,41 +34,40 @@ func Generator(pv Private, pb Public) (Private, Public) {
 		q, e = algoritms.NextPrimeNumber(q)
 	}
 
-	// FIXME: удалить после теста
-	_ = p
-	_ = q
-	p = 683
-	q = 811
-
 	n := uint64(math.Abs(float64(p * q)))
 
 	pv.P = p
 	pv.Q = q
 	pb.N = n
 
-	return pv, pb
+	return marshalData(pv, pb)
 }
 
-func ParseData(p string, pv Private, pb Public, response json.RawMessage) (Private, Public, error) {
+func (s *Server) ParsePhaseData(p string, pvi, pbi, request json.RawMessage) (json.RawMessage, json.RawMessage, error) {
+	pv, pb, err := unmarshalData(pvi, pbi)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	switch strings.ToUpper(p) {
 	case PhaseSetKey:
 		r := struct {
 			Key uint64 `json:"key"`
 		}{}
 
-		if err := json.Unmarshal(response, &r); err != nil {
-			return Private{}, Public{}, err
+		if err := json.Unmarshal(request, &r); err != nil {
+			return nil, nil, err
 		}
 
 		pb.PublicKey = r.Key
 
-		return pv, pb, nil
+		return marshalData(pv, pb)
 	}
 
-	return Private{}, Public{}, errors.New("phase not found")
+	return nil, nil, ErrPhaseNotHave
 }
 
-func Validate(p string, pv Private, pb Public) error {
+func (s *Server) Validate(p string, _, _ json.RawMessage) error {
 	switch strings.ToUpper(p) {
 	case PhaseSetKey:
 		return nil
@@ -68,14 +76,24 @@ func Validate(p string, pv Private, pb Public) error {
 		// }
 	}
 
-	return errors.New("phase not found")
+	return ErrPhaseNotHave
 }
 
-func RunPhase(p string, pv Private, pb Public) (Private, Public, error) {
-	switch strings.ToUpper(p) {
-	case PhaseSetKey:
-		return pv, pb, nil
+func (s *Server) RunPhase(p string, pvi, pbi json.RawMessage) (json.RawMessage, json.RawMessage, error) {
+	pv, pb, err := unmarshalData(pvi, pbi)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return Private{}, Public{}, errors.New("phase not found")
+	switch strings.ToUpper(p) {
+	case PhaseSetKey:
+		return marshalData(pv, pb)
+	}
+
+	return nil, nil, ErrPhaseNotHave
+}
+
+func (s *Server) POWCheck(privateDataInput, publicDataInput, request json.RawMessage) (bool, error) {
+	// TODO: не реализовано в пользу hashcash
+	return false, nil
 }
