@@ -15,7 +15,7 @@ func (s *Server) Generator(privateDataInput, _ json.RawMessage) (privateData, pu
 		Data: randstr.String(LenRandString),
 	}
 
-	pbr, err := json.Marshal(&pb)
+	pbr, err := json.Marshal(pb)
 
 	return privateDataInput, pbr, err
 }
@@ -37,7 +37,17 @@ func (s *Server) POWCheck(privateDataInput, publicDataInput, request json.RawMes
 	r := string(request)
 	r = strings.Trim(r, "\"")
 
-	// FIXME: Добавить проверку чито вычислил именно то, что требовалось
+	var pb Public
+	if err := json.Unmarshal(publicDataInput, &pb); err != nil {
+		return false, err
+	}
+
+	rs := strings.Split(r, ":")
+
+	// Compare pow data
+	if len(rs) != 7 || pb.Data != rs[3] {
+		return false, nil
+	}
 
 	return hc.NewStd().CheckNoDate(string(r)), nil
 }
