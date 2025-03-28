@@ -1,8 +1,8 @@
 package v1
 
 import (
+	"context"
 	"encoding/json"
-	"fmt"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -10,6 +10,7 @@ import (
 	"github.com/ne-ray/tcp-inbox/config"
 	"github.com/ne-ray/tcp-inbox/internal/entity"
 	"github.com/ne-ray/tcp-inbox/internal/usecase"
+
 	// "github.com/ne-ray/tcp-inbox/pkg/algoritms/pow/fiat-shamir"
 	"github.com/ne-ray/tcp-inbox/pkg/algoritms/pow/hashcash"
 	"github.com/ne-ray/tcp-inbox/pkg/logger"
@@ -156,9 +157,9 @@ func (h *WordOfWisdomHandler) m_handshake_phase_n(phase string, r *srv.Request) 
 
 func (h *WordOfWisdomHandler) m_data(r *srv.Request) (Response, error) {
 	type request struct {
-		SessionID string          `json:"session_id"`
-		POWData   json.RawMessage `json:"pow_data"`
-		Data      json.RawMessage `json:"data"`
+		SessionID string              `json:"session_id"`
+		POWData   json.RawMessage     `json:"pow_data"`
+		Data      entity.WordOfWisdom `json:"data"`
 	}
 
 	var rs request
@@ -185,8 +186,10 @@ func (h *WordOfWisdomHandler) m_data(r *srv.Request) (Response, error) {
 	s.Private.CountReqests++
 	h.s.Set(rs.SessionID, s, s.Public.ExpiredAt.UTC().Sub(time.Now().UTC()))
 
-	// FIXME: переделать на использование usecase
-	fmt.Println(r.RAW)
-	resp := Response{Data: "test\n"}
-	return resp, nil
+	// run UseCase
+	if _, err := h.t.Post(context.Background(), rs.Data); err != nil {
+		return Response{}, err
+	}
+
+	return Response{}, nil
 }
