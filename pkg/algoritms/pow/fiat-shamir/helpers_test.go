@@ -14,7 +14,7 @@ func TestFiatShamirPublicKey(t *testing.T) {
 		t.Error("function return copain not found")
 	}
 
-	// FIXME: сформировать список взаимопростых для теста
+	// TODO: сформировать список взаимопростых для теста
 	_ = r
 	// if
 }

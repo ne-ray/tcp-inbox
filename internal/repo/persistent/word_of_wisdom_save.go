@@ -18,6 +18,6 @@ func New(storageCfg config.Storage) *WordOfWisdomRepo {
 }
 
 func (*WordOfWisdomRepo) Save(context.Context, entity.WordOfWisdom) (entity.WordOfWisdom, error) {
-	//FIXME: реализовать сохранение на диск
+	//TODO: реализовать сохранение на диск
 	return entity.WordOfWisdom{}, nil
 }

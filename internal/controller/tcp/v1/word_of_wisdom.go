@@ -75,7 +75,7 @@ func (h *WordOfWisdomHandler) ServeTCP(w srv.ResponseWriter, r *srv.Request) {
 			With("error", err).With("method", r.Method).With("phase", r.Phase).
 			Error("ControllerTCP v1 - ServeTCP - after run function error")
 
-		// FIXME: перенести реализацию протокола внутрь пакета pkg/tcpserver
+		// TODO: перенести реализацию протокола внутрь пакета pkg/tcpserver
 		_, _ = w.Write([]byte("NTI/1.0 STATUS:500\n\n"))
 
 		return
@@ -87,13 +87,13 @@ func (h *WordOfWisdomHandler) ServeTCP(w srv.ResponseWriter, r *srv.Request) {
 			With("error", err).With("method", r.Method).With("phase", r.Phase).
 			Error("ControllerTCP v1 - ServeTCP - marshal response error")
 
-		// FIXME: перенести реализацию протокола внутрь пакета pkg/tcpserver
+		// TODO: перенести реализацию протокола внутрь пакета pkg/tcpserver
 		_, _ = w.Write([]byte("NTI/1.0 STATUS:500\n\n"))
 
 		return
 	}
 
-	// FIXME: перенести реализацию протокола внутрь пакета pkg/tcpserver
+	// TODO: перенести реализацию протокола внутрь пакета pkg/tcpserver
 	_, _ = w.Write([]byte("NTI/1.0 STATUS:200\n"))
 	_, _ = w.Write(b)
 	_, _ = w.Write([]byte("\n\n"))

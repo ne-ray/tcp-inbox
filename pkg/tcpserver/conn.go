@@ -48,7 +48,7 @@ func (c *conn) setState(nc net.Conn, state http.ConnState, runHook bool) {
 }
 
 func (c *conn) serve(ctx context.Context) {
-	// FIXME: переделать на работу через контекст, что бы была возможность поддерживать idle и прочие статусы
+	// TODO: переделать на работу через контекст, что бы была возможность поддерживать idle и прочие статусы
 	// а так же нормально завершать работу соединений
 	ctx = context.WithValue(ctx, LocalAddrContextKey, c.rwc.LocalAddr())
 	_ = ctx
