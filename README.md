@@ -19,3 +19,17 @@ docker build -f server.Dockerfile ./ -t nti_server:latest
 ```bash
 docker run -d -p 19777:19777/tcp --name nti_server nti_server:latest
 ```
+
+# Build & Run client
+
+## Build Docker container
+```bash
+docker build -f client.Dockerfile ./ -t nti_client:latest
+```
+
+## Run client over docker
+```bash
+docker run --rm nti_client:latest ./client post -s host.docker.internal -l 1 -c 1
+```
+
+for 

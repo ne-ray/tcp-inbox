@@ -68,9 +68,9 @@ func postWoWfunc(ctx context.Context, cmd *cli.Command) error {
 	scanner := snn.New(os.Stdin, []byte{'\n', '\n'})
 
 	var t string
-	// if scanner.Scan() {
-	// 	t = scanner.Text()
-	// }
+	if scanner.Scan() {
+		t = scanner.Text()
+	}
 
 	if err := scanner.Err(); err != nil {
 		return err
