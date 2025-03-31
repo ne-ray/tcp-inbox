@@ -56,6 +56,8 @@ func (h *WordOfWisdomHandler) ServeTCP(w srv.ResponseWriter, r *srv.Request) {
 	var err error
 
 	// TODO: было бы круто иметь возможность для каждого метода и фазы указывать middleware
+	h.l.With("Method", r.Method).With("Phase", r.Phase).Debug("NTI request")
+	
 	switch r.Method {
 	case srv.METHOD_HANDSHAKE:
 		switch r.Phase {
@@ -180,6 +182,8 @@ func (h *WordOfWisdomHandler) m_data(r *srv.Request) (Response, error) {
 	} else if !c {
 		return Response{Error: &ResponseError{Code: 403, Description: "pow missmatch"}}, nil
 	}
+
+	h.l.With("session", rs.SessionID).Debug("PoW success")
 
 	// Update session with old value
 	s.Private.PoWCompleted = true

@@ -3,26 +3,22 @@ package logger
 import (
 	"os"
 	"strings"
+	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
+const timeFormat = time.RFC3339
+
 // Interface -.
 type Interface interface {
-	With(field string, value interface{}) InterfaceLogger
-	Debug(message string)
-	Info(message string)
-	Warn(message string)
-	Warning(message string)
-	Error(message string)
-	Fatal(message string)
+	InterfaceLogger
 	Shutdown() error
 }
 
-// InterfaceLogger -.
 type InterfaceLogger interface {
-	With(field string, value interface{}) InterfaceLogger
+	With(field string, value any) InterfaceLogger
 	Debug(message string)
 	Info(message string)
 	Warn(message string)
@@ -36,10 +32,12 @@ type Logger struct {
 	logger     *zap.Logger
 	appName    string
 	appVersion string
+	timeFormat string
 }
 
 type LoggerInstance struct {
-	logger *zap.SugaredLogger
+	logger     *zap.SugaredLogger
+	timeFormat string
 }
 
 var _ Interface = (*Logger)(nil)
@@ -68,8 +66,8 @@ func New(level, appName, appVer string) *Logger {
 		ErrorOutputPaths: []string{"stderr"},
 		InitialFields:    map[string]interface{}{"application_name": appName, "application_version": appVer},
 		EncoderConfig: zapcore.EncoderConfig{
-			MessageKey: "message",
-			LevelKey:   "level",
+			MessageKey:  "message",
+			LevelKey:    "level",
 			EncodeLevel: zapcore.LowercaseLevelEncoder,
 		},
 	}
@@ -80,16 +78,18 @@ func New(level, appName, appVer string) *Logger {
 		logger:     logger,
 		appName:    appName,
 		appVersion: appVer,
+		timeFormat: timeFormat,
 	}
 }
 
 func (l *Logger) newInstance() InterfaceLogger {
 	return &LoggerInstance{
-		logger: l.logger.Sugar(),
+		logger:     l.logger.Sugar(),
+		timeFormat: l.timeFormat,
 	}
 }
 
-func (l *Logger) With(field string, value interface{}) InterfaceLogger {
+func (l *Logger) With(field string, value any) InterfaceLogger {
 	return l.newInstance().With(field, value)
 }
 
@@ -128,40 +128,59 @@ func (l *Logger) Shutdown() error {
 }
 
 // With -.
-func (l *LoggerInstance) With(field string, value interface{}) InterfaceLogger {
-	l.logger.With(field, value)
+func (li *LoggerInstance) With(field string, value any) InterfaceLogger {
+	li.logger = li.logger.With(field, value)
 
-	return l
+	return li
+}
+
+// WithTime -.
+func (li *LoggerInstance) WithTime() InterfaceLogger {
+	li.With("time", time.Now().Format(li.timeFormat))
+
+	return li
 }
 
 // Debug -.
-func (l *LoggerInstance) Debug(message string) {
-	l.logger.Debug(message)
+func (li *LoggerInstance) Debug(message string) {
+	li.WithTime()
+
+	li.logger.Debug(message)
 }
 
 // Info -.
-func (l *LoggerInstance) Info(message string) {
-	l.logger.Info(message)
+func (li *LoggerInstance) Info(message string) {
+	li.WithTime()
+
+	li.logger.Info(message)
 }
 
 // Warn -.
-func (l *LoggerInstance) Warn(message string) {
-	l.logger.Warn(message)
+func (li *LoggerInstance) Warn(message string) {
+	li.WithTime()
+
+	li.logger.Warn(message)
 }
 
 // Warning -.
-func (l *LoggerInstance) Warning(message string) {
-	l.logger.Warn(message)
+func (li *LoggerInstance) Warning(message string) {
+	li.WithTime()
+
+	li.logger.Warn(message)
 }
 
 // Error -.
-func (l *LoggerInstance) Error(message string) {
-	l.logger.Error(message)
+func (li *LoggerInstance) Error(message string) {
+	li.WithTime()
+
+	li.logger.Error(message)
 }
 
 // Fatal -.
-func (l *LoggerInstance) Fatal(message string) {
-	l.logger.Fatal(message)
+func (li *LoggerInstance) Fatal(message string) {
+	li.WithTime()
+
+	li.logger.Fatal(message)
 
 	os.Exit(1)
 }

@@ -29,6 +29,7 @@ func Run(cfg *config.Config) {
 	// Use case
 	wordOfWisdomUseCase := wordofwisdom.New(
 		persistent.New(cfg.Storage),
+		l,
 	)
 
 	// TCP Handler
