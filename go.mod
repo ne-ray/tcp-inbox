@@ -10,6 +10,7 @@ require (
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/jellydator/ttlcache/v3 v3.3.0
 	github.com/thanhpk/randstr v1.0.6
+	github.com/urfave/cli/v3 v3.1.0
 	go.uber.org/zap v1.27.0
 )
 
