@@ -7,6 +7,17 @@ Design and implement “Word of Wisdom” tcp server.
  • After Proof Of Work verification, server should send one of the quotes from “word of wisdom” book or any other collection of the quotes.
  • Docker file should be provided both for the server and for the client that solves the POW challenge
 
+# Choosed PoW
+## Fiat Shamir
+In first time I choose this algorithm, why? 
+It have two way communication with multiple round request/response, but this algorithm have same difficile for server and client
+
+## Hashcash
+This algorithm have all options for Proof of Work protection will work
+1. One request - one work (for work server generate randow string and wait client calculate PoW)
+2. Algorithm have simpe work for server and difficile for client
+And other argumend for choose this
+1. Algorithm have implementation for Golang
 
 # Build & Run server
 
