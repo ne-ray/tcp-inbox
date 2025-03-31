@@ -30,6 +30,10 @@ func (s *Scanner) Bytes() []byte {
 	return s.bufioScanner.Bytes()
 }
 
+func (s *Scanner) Text() string {
+	return s.bufioScanner.Text()
+}
+
 func (s *Scanner) Err() error {
 	return s.bufioScanner.Err()
 }

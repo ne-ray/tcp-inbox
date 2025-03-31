@@ -19,12 +19,13 @@ type UseCase struct {
 func New(r repo.WordOfWisdom, l logger.Interface) *UseCase {
 	return &UseCase{
 		repo: r,
+		logger: l,
 	}
 }
 
 // Post - post part of word-of-wisdom.
 func (uc *UseCase) Post(ctx context.Context, p entity.WordOfWisdom) (entity.WordOfWisdom, error) {
-	uc.logger.With("line", p.Line).With("chapter", p.Chapter).Debug("WordOfWisdom Post")
+	uc.logger.With("line", p.Line).With("chapter", p.Chapter).Debug("WordOfWisdom Post success")
 
 	w, err := uc.repo.Save(ctx, p)
 	if err != nil {

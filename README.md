@@ -17,5 +17,5 @@ docker build -f server.Dockerfile ./ -t nti_server:latest
 
 ## Run server over docker
 ```bash
-docker run -d -p 19777:19777/tcp nti_server
+docker run -d -p 19777:19777/tcp --name nti_server nti_server:latest
 ```
