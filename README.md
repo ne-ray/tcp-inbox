@@ -29,7 +29,10 @@ docker build -f client.Dockerfile ./ -t nti_client:latest
 
 ## Run client over docker
 ```bash
-docker run --rm nti_client:latest ./client post -s host.docker.internal -l 1 -c 1
+docker run --rm -i nti_client:latest ./client post -s host.docker.internal -l %line book of "Word of Wisdom"%  -c %chapter book of "Word of Wisdom"%
 ```
 
-for 
+for more information send data and flag use command:
+```bash
+docker run --rm nti_client:latest ./client post --help
+```
