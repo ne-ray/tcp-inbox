@@ -1,8 +1,6 @@
 package tcpserver
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -12,6 +10,8 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
+
+	snn "github.com/ne-ray/tcp-inbox/pkg/scanersplitter"
 )
 
 type conn struct {
@@ -55,8 +55,7 @@ func (c *conn) serve(ctx context.Context) {
 
 	defer c.rwc.Close()
 
-	scanner := bufio.NewScanner(c.rwc)
-	scanner.Split(scanDoubleNewLine)
+	scanner := snn.New(c.rwc, []byte{'\r', '\n', '\r', '\n'})
 
 	var ra string
 	if r := c.rwc.RemoteAddr(); r != nil {
@@ -86,30 +85,6 @@ func (c *conn) serve(ctx context.Context) {
 		//FIXME: переделать на логгер или что то другое
 		fmt.Printf("Invalid input: %s", err)
 	}
-}
-
-func scanDoubleNewLine(data []byte, atEOF bool) (advance int, token []byte, err error) {
-	if atEOF && len(data) == 0 {
-		return 0, nil, nil
-	}
-	if i := bytes.Index(data, []byte{'\r', '\n', '\r', '\n'}); i >= 0 {
-		// We have a full newline-terminated line.
-		return i + 2, dropCR(data[0:i]), nil
-	}
-	// If we're at EOF, we have a final, non-terminated line. Return it.
-	if atEOF {
-		return len(data), dropCR(data), nil
-	}
-	// Request more data.
-	return 0, nil, nil
-}
-
-// dropCR drops a terminal \r from the data.
-func dropCR(data []byte) []byte {
-	if len(data) > 0 && data[len(data)-1] == '\r' {
-		return data[0 : len(data)-1]
-	}
-	return data
 }
 
 func parseInputRequest(data []byte) (*Request, error) {

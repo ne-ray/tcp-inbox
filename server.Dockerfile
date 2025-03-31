@@ -16,7 +16,7 @@ RUN mkdir -p $WORKDIR
 COPY ./ $WORKDIR
 WORKDIR $WORKDIR
 
-RUN go build -o ./server cmd/app/main.go
+RUN go build -o ./server cmd/server/main.go
 
 
 # Final repo 
