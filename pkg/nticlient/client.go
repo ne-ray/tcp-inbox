@@ -127,7 +127,35 @@ func (c *Client) Post(line, chapter int, text string) error {
 		return ErrSessionExpired
 	}
 
-	//FIXME: Реализовать
+	d := RequestDataPost{}
+	d.SessionID = c.SessionID
+	d.PowData = c.PoWResult
+	d.Data.Line = line
+	d.Data.Chapter = chapter
+	d.Data.Text = text
+
+	dj, err := json.Marshal(d)
+	if err != nil {
+		return err
+	}
+
+	s := "DATA/POST\n" + string(dj)
+	if _, err := c.conn.Write([]byte(NTIProto + s + EndRequestSplitter)); err != nil {
+		return err
+	}
+
+	var r Response
+	if err := c.readResponse(&r); err != nil {
+		return err
+	}
+
+	if r.Error != nil {
+		return r.Error
+	}
+
+	if r.StatusCode != 200 {
+		return ErrStatusNotOk
+	}
 
 	return nil
 }

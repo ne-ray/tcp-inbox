@@ -2,6 +2,7 @@ package nticlient
 
 import (
 	"encoding/json"
+	"strconv"
 	"strings"
 
 	snn "github.com/ne-ray/tcp-inbox/pkg/scanersplitter"
@@ -32,9 +33,18 @@ func (c *Client) readResponse(r *Response) error {
 		return ErrMixedResponse
 	}
 
-	r.Status, d, f = strings.Cut(d, "\n")
+	var st string
+	st, d, f = strings.Cut(d, "\n")
 	if !f {
 		return ErrMixedResponse
+	}
+
+	sti := strings.TrimLeft(strings.ToLower(st), "status:")
+
+	var err error
+	r.StatusCode, err = strconv.Atoi(sti)
+	if err != nil {
+		return err
 	}
 
 	if err := json.Unmarshal([]byte(d), r); err != nil {

@@ -8,4 +8,5 @@ var (
 	ErrSessionExpired   = errors.New("Time session is up")
 	ErrMissedPoWRequest = errors.New("Empty data Request PoW")
 	ErrMissedPoWResult  = errors.New("Empty PoW result")
+	ErrStatusNotOk      = errors.New("Server return status not OK")
 )

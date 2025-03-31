@@ -81,27 +81,39 @@ func postWoWfunc(ctx context.Context, cmd *cli.Command) error {
 		return err
 	}
 
-	fmt.Println("Handshake for select support protocol")
+	fmt.Print("Handshake for select support protocol - ")
 	if err := n.SelectSupportProtocols(); err != nil {
+		fmt.Print("Error\n")
+
 		return err
 	}
+	fmt.Print("OK\n")
 
-	fmt.Println("Request PoW data for calculate")
+	fmt.Print("Request PoW data for calculate - ")
 	if err := n.RequestPoW(); err != nil {
+		fmt.Print("Error\n")
+
 		return err
 	}
+	fmt.Print("OK\n")
 
-	fmt.Println("Calculate PoW")
+	fmt.Print("Calculate PoW - ")
 	if err := n.CalculatePoW(); err != nil {
+		fmt.Print("Error\n")
+
 		return err
 	}
+	fmt.Print("OK\n")
 
-	fmt.Println("Send data")
+	fmt.Print("Send data - ")
 	if err := n.Post(l, c, t); err != nil {
+		fmt.Print("Error\n")
+
 		return err
 	}
+	fmt.Print("OK\n")
 
-	fmt.Println("Send data success")
+	fmt.Println("Send part of Word of Wisdom - success")
 
 	return nil
 }
