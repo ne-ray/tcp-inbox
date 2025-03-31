@@ -6,9 +6,10 @@ import (
 	"strconv"
 	"sync"
 	"time"
-
-	"github.com/catalinc/hashcash"
+ 
 	"github.com/google/uuid"
+
+	"github.com/ne-ray/tcp-inbox/pkg/algoritms/pow/hashcash"
 )
 
 type Client struct {
@@ -113,7 +114,7 @@ func (c *Client) CalculatePoW() error {
 	}
 
 	var err error
-	c.PoWResult, err = hashcash.NewStd().Mint(c.PoWRequest)
+	c.PoWResult, err = hashcash.HashCalculate(c.PoWRequest)
 
 	return err
 }

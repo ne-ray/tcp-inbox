@@ -5,8 +5,8 @@ import (
 )
 
 // HashCalculate -.
-func HashCalculate(sessionID string) (string, error) {
+func HashCalculate(powData string) (string, error) {
 	h := hc.NewStd()
 
-	return h.Mint(sessionID)
+	return h.Mint(powData)
 }
